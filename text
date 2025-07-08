@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Notebook Memories</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notebook Memories - Scroll View</title>
   <style>
     * {
       margin: 0;
@@ -11,13 +11,12 @@
       box-sizing: border-box;
     }
 
-    html, body {
-      height: 100%;
-      width: 100%;
+    body {
       font-family: 'Georgia', serif;
       background: url('GALEN_BsB/images/bg.jpg') no-repeat center center fixed;
       background-size: cover;
-      overflow: hidden;
+      color: #333;
+      overflow-x: hidden;
     }
 
     .login-container {
@@ -32,9 +31,22 @@
       text-align: center;
       position: absolute;
       top: 50%;
-      right: 5%;
+      left: 5%;
       transform: translateY(-50%);
       z-index: 100;
+      opacity: 0;
+      animation: fadeInScale 0.8s ease forwards;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        transform: translateY(-60%) scale(0.95);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+      }
     }
 
     .login-container input {
@@ -69,111 +81,69 @@
       color: #ccc;
     }
 
-    .controls {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
+    .memory-container {
       display: none;
-      z-index: 100;
+      padding: 40px 10px;
     }
 
-    .controls button {
-      background-color: rgba(255, 255, 255, 0.8);
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: bold;
-    }
-
-    .notebook-container {
-      display: none;
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      perspective: 2000px;
-      overflow: hidden;
-    }
-
-    .page {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    .memory {
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 40px;
-      backface-visibility: hidden;
-      transform-origin: left;
-      transition: transform 1s ease;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      margin-bottom: 30px;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
-    .page img {
-      width: 45%;
-      height: 90%;
+    .memory img {
+      width: 60%;
+      height: auto;
       object-fit: cover;
-      border-radius: 10px;
-      margin-right: 30px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     }
 
-    .text {
-      flex: 1;
-      font-size: 1.5vw;
-      line-height: 1.8;
-      color: #333;
+    .memory img.img-small {
+      width: 65% !important;
     }
 
-    .corner-right, .corner-left {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      bottom: 0;
-      z-index: 100;
-      background: transparent;
-      cursor: pointer;
+    .memory img.img-custom-height {
+      height: 650px !important;
+      object-fit: cover !important;
     }
 
-    .corner-right {
-      right: 0;
-      clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    .memory p {
+      width: 35%;
+      margin-left: 20px;
+      color: white;
+      font-size: 22px;
+      line-height: 1.5;
+      opacity: 0;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      transform: translateX(20px);
     }
 
-    .corner-left {
-      left: 0;
-      clip-path: polygon(0 0, 100% 100%, 0 100%);
-    }
-
-    .flipped {
-      transform: rotateY(-180deg);
-      z-index: 0 !important;
+    .memory:hover p {
+      opacity: 1;
+      transform: translateX(0);
     }
 
     @media (max-width: 768px) {
-      .page {
+      .memory {
         flex-direction: column;
-        padding: 20px;
+        text-align: center;
       }
 
-      .page img {
-        width: 90%;
-        height: auto;
-        margin: 0 0 20px 0;
+      .memory img, .memory p {
+        width: 100%;
+        margin: 0;
+        padding: 10px 0;
       }
 
-      .text {
+      .memory p {
         font-size: 18px;
-      }
-
-      .login-container {
-        right: 50%;
-        transform: translate(50%, -50%);
       }
     }
   </style>
@@ -181,309 +151,218 @@
 <body>
 
   <div class="login-container" id="login-container">
-  <h2>Login</h2>
-  <input type="text" id="username" placeholder="Username" onkeydown="handleEnter(event)" />
-  <input type="password" id="password" placeholder="Password" onkeydown="handleEnter(event)" />
-  <button class="login-btn" onclick="login()">Login</button>
-  <div class="msg" id="msg"></div>
-</div>
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" onkeydown="handleEnter(event)" />
+    <input type="password" id="password" placeholder="Password" onkeydown="handleEnter(event)" />
+    <button class="login-btn" onclick="login()">Login</button>
+    <div class="msg" id="msg"></div>
+  </div>
 
-<script>
-  function handleEnter(event) {
-    if (event.key === "Enter") {
-      login();
-    }
-  }
-
-  function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    const msg = document.getElementById("msg");
-
-    // Example login check (replace with real logic)
-    if (username === "admin" && password === "1234") {
-      msg.textContent = "Login successful!";
-      msg.style.color = "green";
-      // Add code to proceed to main content
-    } else {
-      msg.textContent = "Invalid credentials";
-      msg.style.color = "red";
-    }
-  }
-</script>
-
-  <!-- NOTEBOOK -->
-  <div class="notebook-container" id="notebook">
-    
-    <!-- START: Memory Pages -->
-     <div class="page">
-  <img src="GALEN_BsB/Images/BsB45.jpg" alt="Memory 1" />
-  <div class="text">Memory 1: A beautiful beginning...</div>
-</div>
-<div class="page">
+  <div class="memory-container" id="memory-container">
+    <div class="memory">
   <img src="GALEN_BsB/Images/BsB1.jpg" alt="Memory 1" />
-  <div class="text">Memory 1: A beautiful beginning...</div>
+  <p>Memory 1: The first time we met.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB2.jpg" alt="Memory 2" />
-  <div class="text">Memory 2: Exploring our journey...</div>
+  <p>Memory 2: Endless laughter over silly jokes.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB3.jpg" alt="Memory 3" />
-  <div class="text">Memory 3: Laughs shared on a rainy day.</div>
+  <p>Memory 3: Sharing secrets no one else knew.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB4.jpg" alt="Memory 4" />
-  <div class="text">Memory 4: Our first group study that turned into chaos.</div>
+  <p>Memory 4: Birthday surprises that lit up our smiles.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB5.jpg" alt="Memory 5" />
-  <div class="text">Memory 5: The art of procrastination mastered.</div>
+  <p>Memory 5: Late-night chats that never ended.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB6.jpg" alt="Memory 6" />
-  <div class="text">Memory 6: Celebrating little victories together.</div>
+  <p>Memory 6: Walking under the stars.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB7.jpg" alt="Memory 7" />
-  <div class="text">Memory 7: The library sessions that turned into therapy.</div>
+  <p>Memory 7: Inside jokes only we understand.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB8.jpg" alt="Memory 8" />
-  <div class="text">Memory 8: That one unforgettable field trip.</div>
+  <p>Memory 8: Fighting but always coming back stronger.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB9.jpg" alt="Memory 9" />
-  <div class="text">Memory 9: Learning life beyond the syllabus.</div>
+  <p>Memory 9: Our goofy photo sessions.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB10.jpg" alt="Memory 10" />
-  <div class="text">Memory 10: Coffee-fueled midnight talks.</div>
+  <p>Memory 10: Comforting hugs during tough times.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB11.jpg" alt="Memory 11" />
-  <div class="text">Memory 11: When laughter echoed louder than lectures.</div>
+  <p>Memory 11: Cheering each other on always.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB12.jpg" alt="Memory 12" />
-  <div class="text">Memory 12: Our secret hangout spot.</div>
+  <p>Memory 12: Crazy adventures we never planned.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB13.jpg" alt="Memory 13" />
-  <div class="text">Memory 13: Late-night brainstorming before deadlines.</div>
+  <p>Memory 13: Notes passed secretly in class.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB14.jpg" alt="Memory 14" />
-  <div class="text">Memory 14: Festivals celebrated like family.</div>
+  <p>Memory 14: Our first group trip.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB15.jpg" alt="Memory 15" />
-  <div class="text">Memory 15: The campus sunsets we'll always remember.</div>
+  <p>Memory 15: Celebrating small victories together.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB16.jpg" alt="Memory 16" />
-  <div class="text">Memory 16: Lost and found in shared stories.</div>
+  <p>Memory 16: Photos that turned into treasures.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB17.jpg" alt="Memory 17" />
-  <div class="text">Memory 17: The prank war of the semester.</div>
+  <p>Memory 17: The way you understood my silence.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB18.jpg" alt="Memory 18" />
-  <div class="text">Memory 18: Our talent show shenanigans.</div>
+  <p>Memory 18: Late night walks and deep talks.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB19.jpg" alt="Memory 19" />
-  <div class="text">Memory 19: Notes shared, stress divided.</div>
+  <p>Memory 19: Getting drenched in rain together.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB20.jpg" alt="Memory 20" />
-  <div class="text">Memory 20: When silence meant support.</div>
+  <p>Memory 20: The first time we made each other cry — with laughter.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB21.jpg" alt="Memory 21" />
-  <div class="text">Memory 21: The group project that tested friendships.</div>
+  <p>Memory 21: That one song we both loved.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB22.jpg" alt="Memory 22" />
-  <div class="text">Memory 22: Cheering each other through hard times.</div>
+  <p>Memory 22: Food cravings and midnight snacks.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB23.jpg" alt="Memory 23" />
-  <div class="text">Memory 23: The mess food debates.</div>
+  <p>Memory 23: Staring at sunsets and dreaming big.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB24.jpg" alt="Memory 24" />
-  <div class="text">Memory 24: Unforgettable birthday surprises.</div>
+  <p>Memory 24: Getting caught while doing mischief.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB25.jpg" alt="Memory 25" />
-  <div class="text">Memory 25: Life lessons from unexpected teachers.</div>
+  <p>Memory 25: Sharing our favorite movies.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB26.jpg" alt="Memory 26" />
-  <div class="text">Memory 26: Movie marathons and munchies.</div>
+  <p>Memory 26: Planning future dreams together.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB27.jpg" alt="Memory 27" />
-  <div class="text">Memory 27: Our favorite inside jokes.</div>
+  <p>Memory 27: Being each other’s biggest fan.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB28.jpg" alt="Memory 28" />
-  <div class="text">Memory 28: The walk back home that lasted hours.</div>
+  <p>Memory 28: The time we couldn’t stop laughing in serious moments.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB29.jpg" alt="Memory 29" />
-  <div class="text">Memory 29: Our endless photo sessions.</div>
+  <p>Memory 29: Silent support during the hardest days.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB30.jpg" alt="Memory 30" />
-  <div class="text">Memory 30: Festival colors and smiling faces.</div>
+  <p>Memory 30: Watching the stars and talking forever.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB31.jpg" alt="Memory 31" />
-  <div class="text">Memory 31: Lessons we learned the hard way.</div>
+  <p>Memory 31: Crazy selfies and random poses.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB32.jpg" alt="Memory 32" />
-  <div class="text">Memory 32: Our farewell rehearsal bloopers.</div>
+  <p>Memory 32: The day we promised to stay close always.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB33.jpg" alt="Memory 33" />
-  <div class="text">Memory 33: Bonds that felt like home.</div>
+  <p>Memory 33: Shopping sprees and silly decisions.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB34.jpg" alt="Memory 34" />
-  <div class="text">Memory 34: When everything just clicked.</div>
+  <p>Memory 34: Finding happiness in little things.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB35.jpg" alt="Memory 35" />
-  <div class="text">Memory 35: Dancing under the stars.</div>
+  <p>Memory 35: Our goofy dance moves.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB36.jpg" alt="Memory 36" />
-  <div class="text">Memory 36: Adventures we never planned.</div>
+  <p>Memory 36: The unspoken bond we share.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB37.jpg" alt="Memory 37" />
-  <div class="text">Memory 37: Days filled with music and madness.</div>
+  <p>Memory 37: Making even the boring moments fun.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB38.jpg" alt="Memory 38" />
-  <div class="text">Memory 38: Sharing dreams and fears.</div>
+  <p>Memory 38: Solving problems together like a team.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB39.jpg" alt="Memory 39" />
-  <div class="text">Memory 39: That one game night to remember.</div>
+  <p>Memory 39: That one unforgettable moment of truth.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB40.jpg" alt="Memory 40" />
-  <div class="text">Memory 40: Laughter in the lecture hall.</div>
+  <p>Memory 40: Being real without fear of judgment.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB41.jpg" alt="Memory 41" />
-  <div class="text">Memory 41: The silence before goodbye.</div>
+  <p>Memory 41: You always stood by me.</p>
 </div>
-<div class="page">
+<div class="memory">
   <img src="GALEN_BsB/Images/BsB42.jpg" alt="Memory 42" />
-  <div class="text">Memory 42: Hugs tighter than words.</div>
+  <p>Memory 42: A journey filled with unbreakable bonds.</p>
 </div>
-<div class="page">
-  <img src="GALEN_BsB/Images/BsB43.jpg" alt="Memory 43" />
-  <div class="text">Memory 43: A beautiful ending...</div>
-</div>
-<!-- END: Memory Pages -->
->
 
-    <div class="corner-right" onclick="flipNext()"></div>
-    <div class="corner-left" onclick="flipPrev()"></div>
+    
+    <div class="memory">
+      <img src="GALEN_BsB/Images/BsB43.jpg" alt="Memory 43" class="img-small img-custom-height" />
+      <p>Memory 43: A beautiful ending...</p>
+    </div>
+    <!-- Add more memories as needed -->
   </div>
 
-  <!-- CONTROLS -->
-  <div class="controls" id="controls">
-    <button onclick="toggleAutoFlip()" id="autoBtn">Pause Auto Flip</button>
-  </div>
-
-  <!-- BACKGROUND MUSIC (No autoplay) -->
   <audio id="bgm" loop>
     <source src="Nisarisa BGM.mp3" type="audio/mpeg" />
   </audio>
 
   <script>
-    let currentIndex = 0;
-    let pages = [];
-    let autoFlip = true;
-    let flipInterval = null;
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        login();
+      }
+    }
 
     function login() {
-      const user = document.getElementById("username").value;
-      const pass = document.getElementById("password").value;
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
       const msg = document.getElementById("msg");
 
-      if (user === "admin" && pass === "1234") {
+      if (username === "admin" && password === "1234") {
         msg.textContent = "Login successful!";
+        msg.style.color = "lightgreen";
         document.getElementById("login-container").style.display = "none";
-        document.getElementById("notebook").style.display = "block";
-        document.getElementById("controls").style.display = "block";
-
-        pages = document.querySelectorAll('.page');
-        updateZIndex();
-
-        // Play music after login
-        setTimeout(() => {
-          document.getElementById("bgm").play().catch(() => console.log("Autoplay blocked."));
-        }, 500);
-
-        startAutoFlip();
+        document.getElementById("memory-container").style.display = "block";
+        document.getElementById("bgm").play().catch(() => {});
       } else {
-        msg.textContent = "Invalid credentials.";
+        msg.textContent = "Invalid credentials";
         msg.style.color = "red";
       }
     }
-
-    function flipNext() {
-      if (currentIndex < pages.length) {
-        pages[currentIndex].classList.add("flipped");
-        currentIndex++;
-        updateZIndex();
-      }
-    }
-
-    function flipPrev() {
-      if (currentIndex > 0) {
-        currentIndex--;
-        pages[currentIndex].classList.remove("flipped");
-        updateZIndex();
-      }
-    }
-
-    function updateZIndex() {
-      pages.forEach((page, i) => {
-        page.style.zIndex = pages.length - i;
-      });
-    }
-
-    function startAutoFlip() {
-      flipInterval = setInterval(() => {
-        if (currentIndex < pages.length) {
-          flipNext();
-        } else {
-          clearInterval(flipInterval); // Stop when last page is reached
-        }
-      }, 4000);
-    }
-
-    function toggleAutoFlip() {
-      const btn = document.getElementById("autoBtn");
-      if (autoFlip) {
-        clearInterval(flipInterval);
-        btn.textContent = "Resume ";
-      } else {
-        startAutoFlip();
-        btn.textContent = "Pause ";
-      }
-      autoFlip = !autoFlip;
-    }
   </script>
 </body>
-</html> 
+</html>
